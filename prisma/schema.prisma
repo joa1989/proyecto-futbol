@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  club         Club?
+}
+
+model Club {
+  id     String @id @default(cuid())
+  name   String
+  colors String?
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @unique
+
+  homeMatches Match[] @relation("HomeMatches")
+  awayMatches Match[] @relation("AwayMatches")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum MatchType {
+  FRIENDLY
+  LEAGUE
+}
+
+enum MatchStatus {
+  PENDING
+  PLAYED
+}
+
+model Match {
+  id        String      @id @default(cuid())
+  type      MatchType   @default(FRIENDLY)
+  status    MatchStatus @default(PENDING)
+
+  kickoffAt DateTime
+  playedAt  DateTime?
+
+  homeClub   Club   @relation("HomeMatches", fields: [homeClubId], references: [id])
+  homeClubId String
+
+  awayClub   Club?  @relation("AwayMatches", fields: [awayClubId], references: [id])
+  awayClubId String?
+
+  // Para amistosos contra bots o nombres libres
+  awayName   String?
+
+  homeGoals Int?
+  awayGoals Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, kickoffAt])
+  @@index([homeClubId, kickoffAt])
+}
+
