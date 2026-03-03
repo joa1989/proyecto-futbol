@@ -4,8 +4,13 @@ export type SessionPayload = {
   userId: string;
 };
 
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) throw new Error("Missing JWT_SECRET");
+const secret = process.env.JWT_SECRET;
+
+if (!secret) {
+  throw new Error("Missing JWT_SECRET");
+}
+
+const JWT_SECRET: string = secret;
 
 export function signSession(payload: SessionPayload) {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: "30d" });
